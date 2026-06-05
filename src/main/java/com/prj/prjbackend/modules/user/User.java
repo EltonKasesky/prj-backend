@@ -30,4 +30,7 @@ public class User {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private Boolean status = true;
 }
