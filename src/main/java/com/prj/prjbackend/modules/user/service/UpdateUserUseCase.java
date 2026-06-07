@@ -1,29 +1,30 @@
 package com.prj.prjbackend.modules.user.service;
 
-import com.prj.prjbackend.infra.user.UserAlreadyExistsException;
-import com.prj.prjbackend.infra.user.UserDisabledException;
-import com.prj.prjbackend.infra.user.UserNotFoundException;
+import com.prj.prjbackend.infra.exception.user.UserAlreadyExistsException;
+import com.prj.prjbackend.infra.exception.user.UserDisabledException;
+import com.prj.prjbackend.infra.exception.user.UserNotFoundException;
 import com.prj.prjbackend.modules.user.User;
 import com.prj.prjbackend.modules.user.dto.UserUpdateRequestDTO;
 import com.prj.prjbackend.modules.user.repository.IUserRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
+@RequiredArgsConstructor
 public class UpdateUserUseCase {
     private final IUserRepository userRepository;
 
-    public UpdateUserUseCase(IUserRepository userRepository){
-        this.userRepository = userRepository;
-    }
+    @Transactional
+    public void execute(final UserUpdateRequestDTO request){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-    public void execute(final UUID id, final UserUpdateRequestDTO request){
-        User user = userRepository.findById(id).orElseThrow(
+        User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new UserNotFoundException("O usuário não pode ser encontrado.")
         );
 
-        userRepository.findByEmail(request.email()).ifPresent(email -> {
+        userRepository.findByEmail(request.email()).ifPresent(emailUser -> {
             throw new UserAlreadyExistsException("A troca de email é invalida. Pois o email usado pertence a outro usuário.");
         });
 
