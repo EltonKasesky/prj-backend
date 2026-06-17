@@ -32,7 +32,8 @@ public class UserController {
     private final CreateUserUseCase createUserUseCase;
     private final UpdateUserUseCase updateUserUseCase;
     private final UpdatePasswordUseCase updatePasswordUseCase;
-    private final DisableUserUseCase disableUserUseCase;
+    private final DisableAuthenticatedUserUseCase disableAuthenticatedUserUseCase;
+    private final DisableUserByIdUseCase disableUserByIdUseCase;
     private final ActiveUserUseCase activeUserUseCase;
 
     @GetMapping
@@ -170,6 +171,26 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@securityUtils.isValidAdmin()")
+    @Operation(
+            summary = "Desativa o usuário baseado na busca por id.",
+            description = "Desativa um usuário ativo baseado na busca por id. **Acesso restrito a Administradores ativos.**",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Usuário desativado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Usuário já está desativado."),
+            @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado."),
+            @ApiResponse(responseCode = "403", description = "Usuário está desativado.")
+    })
+    public ResponseEntity<Void> disableUserById(
+            @Parameter(description = "Id do usuário desejado")
+            @PathVariable UUID id){
+        disableUserByIdUseCase.execute(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(
             summary = "Desativa o usuário autenticado.",
             description = "Desativa o usuário autenticado com soft delete.",
@@ -183,7 +204,7 @@ public class UserController {
     })
     @DeleteMapping
     public ResponseEntity<Void> disableUser(){
-        disableUserUseCase.execute();
+        disableAuthenticatedUserUseCase.execute();
         return ResponseEntity.noContent().build();
     }
 }

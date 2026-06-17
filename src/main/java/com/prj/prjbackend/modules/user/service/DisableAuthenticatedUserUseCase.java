@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DisableUserUseCase {
+public class DisableAuthenticatedUserUseCase {
     private final IUserRepository userRepository;
 
     @Transactional
