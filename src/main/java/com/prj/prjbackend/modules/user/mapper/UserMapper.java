@@ -13,7 +13,9 @@ public class UserMapper implements IUserMapper {
         return new UserResponseDTO(
             user.getId(),
             user.getName(),
-            user.getEmail()
+            user.getEmail(),
+            user.getStatus(),
+            user.getCreatedAt()
         );
     }
 
