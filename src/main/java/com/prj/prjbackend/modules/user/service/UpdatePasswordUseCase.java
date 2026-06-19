@@ -1,5 +1,7 @@
 package com.prj.prjbackend.modules.user.service;
 
+import com.prj.prjbackend.infra.exception.user.InvalidUserPasswordException;
+import com.prj.prjbackend.infra.exception.user.NotEqualsPasswordException;
 import com.prj.prjbackend.infra.exception.user.UserNotFoundException;
 import com.prj.prjbackend.modules.user.User;
 import com.prj.prjbackend.modules.user.dto.UserPasswordRequestDTO;
@@ -24,7 +26,14 @@ public class UpdatePasswordUseCase {
                 () -> new UserNotFoundException("O usuário não pode ser encontrado.")
         );
 
-        user.setPassword(passwordEncoder.encode(request.password()));
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword()))
+            throw new InvalidUserPasswordException("A senha mencionada está incorreta ou é invalida.");
+
+        if (!request.newPassword().equals(request.confirmPassword()))
+            throw new NotEqualsPasswordException("As senhas devem ser iguais para a troca da senha.");
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+
         userRepository.save(user);
     }
 }

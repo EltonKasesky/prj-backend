@@ -30,6 +30,7 @@ public class ProfileController {
     private final GetAllProfilesUseCase getAllProfilesUseCase;
     private final GetProfileByIdUseCase getProfileByIdUseCase;
     private final GetProfilesFromUserIdUseCase getProfilesFromUserIdUseCase;
+    private final GetProfilesFromAuthenticatedUserUseCase getProfilesFromAuthenticatedUserUseCase;
     private final CreateProfileUseCase createProfileUseCase;
     private final AddProfileUserUseCase addProfileUserUseCase;
     private final RemoveProfileUserUseCase removeProfileUserUseCase;
@@ -91,10 +92,24 @@ public class ProfileController {
             @ApiResponse(responseCode = "403", description = "Usuário autenticado não possui perfil de ADMIN ou está desativado."),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado baseado no id buscado.")
     })
-    public ResponseEntity<List<ProfileResponseDTO>> getProfilesFromUser(
+    public ResponseEntity<List<ProfileResponseDTO>> getProfiles(
             @Parameter(description = "Id do usuário desejado")
             @PathVariable UUID id){
         return ResponseEntity.ok().body(getProfilesFromUserIdUseCase.execute(id));
+    }
+
+    @GetMapping("/users/me")
+    @Operation(
+            summary = "Lista os perfis do usuário autenticado.",
+            description = "Retorna uma lista de perfis que pertencetem ao usuário autenticado.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de perfis retornado com sucesso."),
+            @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado.")
+    })
+    public ResponseEntity<List<ProfileResponseDTO>> getProfilesFromAuthenticatedUser (){
+        return ResponseEntity.ok().body(getProfilesFromAuthenticatedUserUseCase.execute());
     }
 
     @PostMapping
