@@ -93,8 +93,8 @@ public class ProfileController {
     })
     public ResponseEntity<List<ProfileResponseDTO>> getProfilesFromUser(
             @Parameter(description = "Id do usuário desejado")
-            @PathVariable UUID userId){
-        return ResponseEntity.ok().body(getProfilesFromUserIdUseCase.execute(userId));
+            @PathVariable UUID id){
+        return ResponseEntity.ok().body(getProfilesFromUserIdUseCase.execute(id));
     }
 
     @PostMapping
@@ -117,7 +117,7 @@ public class ProfileController {
         return ResponseEntity.created(URI.create("")).build();
     }
 
-    @PostMapping("/users/add")
+    @PostMapping("/users/add/{id}")
     @PreAuthorize("@securityUtils.isValidAdmin()")
     @Operation(
             summary = "Adiciona um perfil para o usuário.",
@@ -132,13 +132,15 @@ public class ProfileController {
             @ApiResponse(responseCode = "404", description = "Perfil ou usuário não encontrados baseado nos dados de busca.")
     })
     public ResponseEntity<Void> addProfileToUser(
+            @Parameter(description = "Id do usuário desejado")
+            @PathVariable UUID id,
             @Parameter(description = "Corpo de adição de perfil a usuário")
             @RequestBody @Valid ProfileToUserRequestDTO request){
-        addProfileUserUseCase.execute(request);
+        addProfileUserUseCase.execute(id, request);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/users/remove")
+    @PostMapping("/users/remove/{id}")
     @PreAuthorize("@securityUtils.isValidAdmin()")
     @Operation(
             summary = "Remove um perfil do usuário.",
@@ -153,9 +155,11 @@ public class ProfileController {
             @ApiResponse(responseCode = "404", description = "Perfil ou usuário não encontrados baseado nos dados de busca.")
     })
     public ResponseEntity<Void> removeProfileFromUser(
+            @Parameter(description = "Id do usuário desejado")
+            @PathVariable UUID id,
             @Parameter(description = "Corpo de remoção de perfil a usuário")
             @RequestBody @Valid ProfileToUserRequestDTO request){
-        removeProfileUserUseCase.execute(request);
+        removeProfileUserUseCase.execute(id, request);
         return ResponseEntity.noContent().build();
     }
 

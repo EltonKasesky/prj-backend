@@ -14,6 +14,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class RemoveProfileUserUseCase {
@@ -21,25 +25,32 @@ public class RemoveProfileUserUseCase {
     private final IProfileRepository profileRepository;
 
     @Transactional
-    public void execute(final ProfileToUserRequestDTO request) {
-        User user = userRepository.findById(request.userId()).orElseThrow(
+    public void execute(final UUID userId, ProfileToUserRequestDTO request) {
+        User user = userRepository.findById(userId).orElseThrow(
                 () -> new UserNotFoundException("O usuário não pode ser encontrado.")
-        );
-
-        Profile profile = profileRepository.findByName(request.profileName()).orElseThrow(
-                () -> new ProfileNotFoundException("O perfil não pode ser encontrado.")
         );
 
         if (user.getStatus().equals(false))
             throw new UserDisabledException("O usuário está desativado.");
 
-        if (profile.getStatus().equals(false))
-            throw new ProfileDisabledException("O perfil está desativado.");
+        List<Profile> profiles = new ArrayList<>();
+        request.profileNames().forEach(profile -> {
+            profiles.add(profileRepository.findByName(profile).orElseThrow(
+                    () -> new ProfileNotFoundException("O perfil não pode ser encontrado.")
+            ));
+        });
 
-        if (user.getProfiles().stream().noneMatch(p -> p.equals(profile)))
-            throw new UserAlreadyHaveProfileException("O usuário não possui o perfil solicitado.");
+        if (profiles.stream().anyMatch(profile -> !profile.getStatus()))
+            throw new ProfileDisabledException("Um ou mais perfis estão desativados.");
 
-        user.getProfiles().remove(profile);
+        List<Profile> existingProfiles = profiles.stream()
+                .filter(user.getProfiles()::contains)
+                .toList();
+
+        if (existingProfiles.isEmpty())
+            throw new UserAlreadyHaveProfileException("O usuário não possui um ou mais dos perfis solicitados.");
+
+        existingProfiles.forEach(user.getProfiles()::remove);
         userRepository.save(user);
     }
 }
