@@ -202,7 +202,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado."),
             @ApiResponse(responseCode = "403", description = "Usuário está desativado.")
     })
-    @DeleteMapping
+    @DeleteMapping("/me")
     public ResponseEntity<Void> disableUser(){
         disableAuthenticatedUserUseCase.execute();
         return ResponseEntity.noContent().build();

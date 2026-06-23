@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CreateUserUseCase {
     private final IUserRepository userRepository;
-    private final IProfileRepository profileRepository;
     private final IUserMapper userMapper;
 
     @Transactional
@@ -26,12 +25,6 @@ public class CreateUserUseCase {
         });
 
         User user = userMapper.toEntity(request);
-
-        Profile profile = profileRepository.findByName("ROLE_COLLECTOR").orElseThrow(
-                () -> new ProfileNotFoundException("O perfil não pode ser encontrado.")
-        );
-
-        user.getProfiles().add(profile);
 
         userRepository.save(user);
     }

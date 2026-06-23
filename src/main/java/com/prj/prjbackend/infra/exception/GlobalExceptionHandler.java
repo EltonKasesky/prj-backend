@@ -6,9 +6,7 @@ import com.prj.prjbackend.infra.exception.profile.ProfileAlreadyExists;
 import com.prj.prjbackend.infra.exception.profile.ProfileDisabledException;
 import com.prj.prjbackend.infra.exception.profile.ProfileNotFoundException;
 import com.prj.prjbackend.infra.exception.profile.UserAlreadyHaveProfileException;
-import com.prj.prjbackend.infra.exception.user.UserAlreadyExistsException;
-import com.prj.prjbackend.infra.exception.user.UserDisabledException;
-import com.prj.prjbackend.infra.exception.user.UserNotFoundException;
+import com.prj.prjbackend.infra.exception.user.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +65,40 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 status.value(),
                 "Recurso desabilitado.",
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(InvalidUserPasswordException.class)
+    public ResponseEntity<StandardErrorDTO> handleUserNotFound(
+            InvalidUserPasswordException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                "A senha mencionada está incorreta ou é invalida.",
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(NotEqualsPasswordException.class)
+    public ResponseEntity<StandardErrorDTO> handleUserNotFound(
+            NotEqualsPasswordException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                "As senhas devem ser iguais para a troca da senha.",
                 exception.getMessage()
         );
 

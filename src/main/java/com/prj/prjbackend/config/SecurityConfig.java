@@ -44,13 +44,15 @@ public class SecurityConfig {
                         //Statistics
                         .requestMatchers(HttpMethod.GET, "/statistics/**").permitAll()
                         //Users
-                        .requestMatchers(HttpMethod.GET, "/users/me").hasAnyRole("ADMIN", "AUTHOR", "COLLECTOR")
+                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/users/{id}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/users/me").hasAnyRole("ADMIN", "AUTHOR", "COLLECTOR")
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").hasAnyRole("ADMIN", "AUTHOR", "COLLECTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/me").authenticated()
                         //Profiles
+                        .requestMatchers(HttpMethod.GET, "/profiles/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/profiles/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/profiles/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/profiles/**").hasRole("ADMIN")
