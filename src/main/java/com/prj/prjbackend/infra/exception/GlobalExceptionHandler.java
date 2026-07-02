@@ -1,5 +1,6 @@
 package com.prj.prjbackend.infra.exception;
 
+import com.prj.prjbackend.infra.exception.album.AlbumNotFoundException;
 import com.prj.prjbackend.infra.exception.auth.UserAuthNotFoundException;
 import com.prj.prjbackend.infra.exception.dto.StandardErrorDTO;
 import com.prj.prjbackend.infra.exception.profile.ProfileAlreadyExists;
@@ -10,10 +11,13 @@ import com.prj.prjbackend.infra.exception.user.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -185,6 +189,44 @@ public class GlobalExceptionHandler {
                 status.value(),
                 NOT_FOUND_MESSAGE,
                 exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(AlbumNotFoundException.class)
+    public ResponseEntity<StandardErrorDTO> handleAlbumNotFound(
+            AlbumNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                NOT_FOUND_MESSAGE,
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<StandardErrorDTO> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        String message = exception.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining("; "));
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                "Erro de validação.",
+                message
         );
 
         return ResponseEntity.status(status).body(error);

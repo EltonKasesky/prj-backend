@@ -1,6 +1,5 @@
 package com.prj.prjbackend.modules.album;
 
-import com.prj.prjbackend.modules.sticker.Sticker;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -43,8 +40,4 @@ public class Album {
     @Positive
     @Column(nullable = false)
     private Integer totalStickers;
-
-    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY)
-    @OrderBy("number ASC")
-    private List<Sticker> stickers = new ArrayList<>();
 }
