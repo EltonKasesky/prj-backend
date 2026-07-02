@@ -1,7 +1,9 @@
 package com.prj.prjbackend.modules.album.dto;
 
+import com.prj.prjbackend.modules.sticker.dto.StickerResponseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
 import java.util.UUID;
 
 public record AlbumDetailsDTO(
@@ -15,6 +17,11 @@ public record AlbumDetailsDTO(
         String coverImageUrl,
 
         @Schema(example = "112")
-        Integer totalPages
+        Integer totalPages,
+
+        @Schema(example = "980")
+        Integer totalStickers,
+
+        List<StickerResponseDTO> stickers
 )  {
 }

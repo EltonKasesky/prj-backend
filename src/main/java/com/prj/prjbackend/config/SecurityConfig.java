@@ -67,6 +67,11 @@ public class SecurityConfig {
                         //Album
                         .requestMatchers(HttpMethod.GET, "/album/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/album").hasRole("AUTHOR")
+                        //Stickers (catálogo gerenciado exclusivamente pelo Autor)
+                        .requestMatchers(HttpMethod.GET, "/stickers/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/stickers").hasRole("AUTHOR")
+                        .requestMatchers(HttpMethod.PUT, "/stickers/**").hasRole("AUTHOR")
+                        .requestMatchers(HttpMethod.DELETE, "/stickers/**").hasRole("AUTHOR")
                         //Others
                         .anyRequest().authenticated()
                 )
