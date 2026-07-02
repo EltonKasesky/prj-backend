@@ -72,6 +72,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/stickers").hasRole("AUTHOR")
                         .requestMatchers(HttpMethod.PUT, "/stickers/**").hasRole("AUTHOR")
                         .requestMatchers(HttpMethod.DELETE, "/stickers/**").hasRole("AUTHOR")
+                        //UserStickers (posse gerenciada exclusivamente pelo Colecionador)
+                        .requestMatchers(HttpMethod.GET, "/user-stickers/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/user-stickers").hasRole("COLLECTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/user-stickers/**").hasRole("COLLECTOR")
                         //Others
                         .anyRequest().authenticated()
                 )
