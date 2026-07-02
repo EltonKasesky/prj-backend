@@ -27,11 +27,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
     private final GetAllUsersUseCase getAllUsersUseCase;
+    private final GetFilteredUsersUseCase getFilteredUsersUseCase;
     private final GetUserByIdUseCase getUserByIdUseCase;
     private final GetAuthenticatedUserUseCase getAuthenticatedUserUseCase;
     private final CreateUserUseCase createUserUseCase;
     private final UpdateUserUseCase updateUserUseCase;
+    private final UpdateUserByIdUseCase updateUserByIdUseCase;
     private final UpdatePasswordUseCase updatePasswordUseCase;
+    private final ResetUserPasswordUseCase resetUserPasswordUseCase;
     private final DisableAuthenticatedUserUseCase disableAuthenticatedUserUseCase;
     private final DisableUserByIdUseCase disableUserByIdUseCase;
     private final ActiveUserUseCase activeUserUseCase;
@@ -40,7 +43,7 @@ public class UserController {
     @PreAuthorize("@securityUtils.isValidAdmin()")
     @Operation(
             summary = "Lista todos os usuários de forma paginada.",
-            description = "Retorna uma lista paginada de todos os usuários cadastrados no sistema. **Acesso restrito a Administradores ativos.**",
+            description = "Retorna uma lista paginada de todos os usuários cadastrados no sistema, com filtro opcional por nome, email e perfil. **Acesso restrito a Administradores ativos.**",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
@@ -53,9 +56,24 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
 
             @Parameter(description = "Quantidade de registros por página", example = "10")
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(description = "Filtro por parte do nome do usuário")
+            @RequestParam(required = false) String name,
+
+            @Parameter(description = "Filtro por parte do email do usuário")
+            @RequestParam(required = false) String email,
+
+            @Parameter(description = "Filtro por parte do nome do perfil (ex: ROLE_ADMIN)")
+            @RequestParam(required = false) String profile
     ){
-        return ResponseEntity.ok().body(getAllUsersUseCase.execute(size, page));
+        boolean hasFilter = name != null || email != null || profile != null;
+
+        Page<UserResponseDTO> users = hasFilter
+                ? getFilteredUsersUseCase.execute(size, page, name, email, profile)
+                : getAllUsersUseCase.execute(size, page);
+
+        return ResponseEntity.ok().body(users);
     }
 
     @GetMapping("/{id}")
@@ -105,11 +123,12 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado."),
             @ApiResponse(responseCode = "403", description = "Usuário autenticado não possui perfil de ADMIN ou está desativado.")
     })
-    public ResponseEntity<Void> createUser(
+    public ResponseEntity<UserResponseDTO> createUser(
             @Parameter(description = "Corpo de criação do usuário")
             @Valid @RequestBody UserRegisterRequestDTO request){
-        createUserUseCase.execute(request);
-        return ResponseEntity.created(URI.create("")).build();
+        UserResponseDTO created = createUserUseCase.execute(request);
+        URI location = URI.create("/users/" + created.id());
+        return ResponseEntity.created(location).body(created);
     }
 
     @PatchMapping("/me")
@@ -128,6 +147,49 @@ public class UserController {
             @Parameter(description = "Corpo de atualização do usuário")
             @Valid @RequestBody UserUpdateRequestDTO request){
         updateUserUseCase.execute(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("@securityUtils.isValidAdmin()")
+    @Operation(
+            summary = "Atualiza os dados de um usuário pelo id.",
+            description = "Atualiza o nome de um usuário qualquer. O perfil deve ser gerenciado pelas rotas de /profiles. **Acesso restrito a Administradores ativos.**",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Usuário atualizado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Dados de atualização inválidos."),
+            @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado."),
+            @ApiResponse(responseCode = "403", description = "Usuário autenticado não possui perfil de ADMIN ou está desativado."),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado baseado no id buscado.")
+    })
+    public ResponseEntity<Void> updateUserById(
+            @Parameter(description = "Id do usuário desejado")
+            @PathVariable UUID id,
+            @Parameter(description = "Corpo de atualização do usuário")
+            @Valid @RequestBody UserUpdateRequestDTO request){
+        updateUserByIdUseCase.execute(id, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/reset-password")
+    @PreAuthorize("@securityUtils.isValidAdmin()")
+    @Operation(
+            summary = "Reseta a senha de um usuário para o valor padrão.",
+            description = "Reseta a senha de um usuário para o próprio nome dele. **Acesso restrito a Administradores ativos.**",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Senha resetada com sucesso."),
+            @ApiResponse(responseCode = "401", description = "Token JWT ausente, inválido ou expirado."),
+            @ApiResponse(responseCode = "403", description = "Usuário autenticado não possui perfil de ADMIN ou está desativado."),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado baseado no id buscado.")
+    })
+    public ResponseEntity<Void> resetUserPassword(
+            @Parameter(description = "Id do usuário desejado")
+            @PathVariable UUID id){
+        resetUserPasswordUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 
