@@ -64,6 +64,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/admin/**").hasRole("ADMIN")
+                        //Album
+                        .requestMatchers(HttpMethod.GET, "/album/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/album").hasRole("AUTHOR")
                         //Others
                         .anyRequest().authenticated()
                 )
