@@ -1,9 +1,12 @@
 package com.prj.prjbackend.modules.statistics.service;
 
 import com.prj.prjbackend.infra.exception.profile.ProfileNotFoundException;
+import com.prj.prjbackend.modules.album.Album;
+import com.prj.prjbackend.modules.album.repository.IAlbumRepository;
 import com.prj.prjbackend.modules.profile.Profile;
 import com.prj.prjbackend.modules.profile.repository.IProfileRepository;
 import com.prj.prjbackend.modules.statistics.dto.HomePageResponseDTO;
+import com.prj.prjbackend.modules.sticker.repository.IStickerRepository;
 import com.prj.prjbackend.modules.user.User;
 import com.prj.prjbackend.modules.user.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,8 @@ import java.util.List;
 public class GetStatsForHomePageUseCase {
     private final IUserRepository userRepository;
     private final IProfileRepository profileRepository;
+    private final IStickerRepository stickerRepository;
+    private final IAlbumRepository albumRepository;
 
     public HomePageResponseDTO execute(){
         List<User> users = userRepository.findAll();
@@ -25,7 +30,11 @@ public class GetStatsForHomePageUseCase {
 
         List<User> authors = users.stream().filter(user -> user.getProfiles().contains(profile)).toList();
 
-        //TODO: Atualizar quando criado album, firuginhas e times para contabilizar
-        return new HomePageResponseDTO(authors.size(), 0, 0, 0);
+        int targetFigures = albumRepository.findFirstByOrderByIdAsc()
+                .map(Album::getTotalStickers)
+                .orElse(0);
+        int createdFigures = Math.toIntExact(stickerRepository.count());
+
+        return new HomePageResponseDTO(authors.size(), targetFigures, createdFigures);
     }
 }

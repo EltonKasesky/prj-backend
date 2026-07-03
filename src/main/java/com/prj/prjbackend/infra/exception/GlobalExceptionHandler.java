@@ -7,7 +7,12 @@ import com.prj.prjbackend.infra.exception.profile.ProfileAlreadyExists;
 import com.prj.prjbackend.infra.exception.profile.ProfileDisabledException;
 import com.prj.prjbackend.infra.exception.profile.ProfileNotFoundException;
 import com.prj.prjbackend.infra.exception.profile.UserAlreadyHaveProfileException;
+import com.prj.prjbackend.infra.exception.sticker.InvalidStickerPageException;
+import com.prj.prjbackend.infra.exception.sticker.StickerAlreadyExistsException;
+import com.prj.prjbackend.infra.exception.sticker.StickerNotFoundException;
 import com.prj.prjbackend.infra.exception.user.*;
+import com.prj.prjbackend.infra.exception.usersticker.UserStickerAlreadyAcquiredException;
+import com.prj.prjbackend.infra.exception.usersticker.UserStickerNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -197,6 +202,91 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AlbumNotFoundException.class)
     public ResponseEntity<StandardErrorDTO> handleAlbumNotFound(
             AlbumNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                NOT_FOUND_MESSAGE,
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(StickerNotFoundException.class)
+    public ResponseEntity<StandardErrorDTO> handleStickerNotFound(
+            StickerNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                NOT_FOUND_MESSAGE,
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(StickerAlreadyExistsException.class)
+    public ResponseEntity<StandardErrorDTO> handleStickerAlreadyExists(
+            StickerAlreadyExistsException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                ALREADY_EXISTS,
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(InvalidStickerPageException.class)
+    public ResponseEntity<StandardErrorDTO> handleInvalidStickerPage(
+            InvalidStickerPageException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                "Dados inválidos.",
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(UserStickerAlreadyAcquiredException.class)
+    public ResponseEntity<StandardErrorDTO> handleUserStickerAlreadyAcquired(
+            UserStickerAlreadyAcquiredException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                status.value(),
+                "Recurso em uso.",
+                exception.getMessage()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(UserStickerNotFoundException.class)
+    public ResponseEntity<StandardErrorDTO> handleUserStickerNotFound(
+            UserStickerNotFoundException exception,
             HttpServletRequest request
     ) {
         HttpStatus status = HttpStatus.NOT_FOUND;
